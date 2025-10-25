@@ -1,11 +1,19 @@
+export const runtime = 'nodejs';      // ensure Node (not Edge) for Prisma
+export const dynamic = 'force-dynamic'; // disable static generation
+export const revalidate = 0;            // no cache
 // app/feed/page.tsx
 import prisma from '@/lib/prisma';
 
 export default async function FeedPage() {
-  const items = await prisma.case.findMany({
+  const cases = await prisma.case.findMany({
     orderBy: { createdAt: 'desc' },
-    take: 20,
-    include: { findings: true, therapies: true, outcomeTags: true, narrative: true },
+    take: 50,
+    include: {
+      findings: true,
+      outcomeTags: true,
+      therapies: true,
+      narrative: true,
+    },
   });
 
   return (

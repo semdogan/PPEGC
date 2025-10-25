@@ -1,0 +1,137 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// SQLite notes (use // comments only):
+// - No native enums  → use String with defaults (see User.role)
+// - No Json type     → store JSON as text: String? @db.Text
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  role        String       @default("CLINICIAN") // was enum in Postgres version
+  institution String?
+  createdAt   DateTime     @default(now())
+  cases       Case[]       @relation("UserCases")
+  comments    Comment[]
+  auditEvents AuditEvent[]
+}
+
+model Case {
+  id            String             @id @default(cuid())
+  title         String?
+  tumorOncoTree String
+  icd10         String?
+  stage         String
+  histology     String?
+  ageBand       String
+  careContext   String
+  msiTmb        String?
+  createdAt     DateTime           @default(now())
+  createdById   String
+  createdBy     User               @relation("UserCases", fields: [createdById], references: [id])
+  findings      MolecularFinding[]
+  therapies     TherapyLine[]
+  narrative     Narrative?
+  governance    DataGovernance?
+  outcomeTags   OutcomeTag[]
+
+  // Back-relations (make relations symmetric)
+  comments    Comment[]
+  auditEvents AuditEvent[]
+
+  @@index([tumorOncoTree, stage, createdAt])
+}
+
+model MolecularFinding {
+  id           String  @id @default(cuid())
+  caseId       String
+  case         Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  gene         String
+  hgvs_p       String?
+  hgvs_c       String?
+  variantClass String?
+  pathway      String?
+  build        String
+  assay        String
+  vafBin       String?
+  sampleSite   String?
+
+  @@index([gene])
+  @@index([hgvs_p])
+  @@index([hgvs_c])
+}
+
+model TherapyLine {
+  id           String @id @default(cuid())
+  caseId       String
+  case         Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  line         Int
+  drugs        String
+  bestResponse String
+  durationBin  String
+  toxicityBin  String
+}
+
+model OutcomeTag {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tag    String
+}
+
+model Narrative {
+  id                String  @id @default(cuid())
+  caseId            String  @unique
+  case              Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  clinicalQuestion  String?
+  exceptionalAspect String?
+  timelineText      String?
+  mtbDiscussed      Boolean @default(false)
+  impactSummary     String?
+  sensitivityScore  Float   @default(0.0)
+}
+
+model DataGovernance {
+  id               String    @id @default(cuid())
+  caseId           String    @unique
+  case             Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sharingTier      String
+  allowedUses      String?
+  license          String?
+  allowCommercial  Boolean   @default(false)
+  allowMLNarrative Boolean   @default(false)
+  academicOnly     Boolean   @default(true)
+  embargoUntil     DateTime?
+  ethicsRef        String?
+  lastReviewedAt   DateTime?
+}
+
+model Comment {
+  id              String   @id @default(cuid())
+  caseId          String
+  case            Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+  body            String
+  createdAt       DateTime @default(now())
+  isModeratorNote Boolean  @default(false)
+}
+
+model AuditEvent {
+  id     String   @id @default(cuid())
+  caseId String?
+  case   Case?    @relation(fields: [caseId], references: [id])
+  userId String?
+  user   User?    @relation(fields: [userId], references: [id])
+  ts     DateTime @default(now())
+  action String
+  meta   String? // store JSON-as-text on SQLite
+}

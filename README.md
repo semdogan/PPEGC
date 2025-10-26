@@ -1,30 +1,25 @@
-# PEGCC • Prisma (SQLite) Mockup
+# PEGCC — Platform for Exceptional Genomic Cancer Cases
 
-Quick Case form → SQLite via Prisma → shows in Feed. Zero DB setup.
+**Stack:** Next.js 14 • Prisma • Postgres (Neon) • Vercel  
+**Status:** Public MVP live (Quick Case → Feed)
 
-## Run locally
-```bash
-npm i
-npx prisma generate
-npx prisma migrate dev --name init
-npm run seed
-npm run dev
-```
+## What it does
+- **Quick Case** (2-minute) submission with light PHI guardrails
+- Persists cases to **Postgres (Neon)** via Prisma
+- **Feed** renders dynamically (no caching) to show new submissions instantly
+- **Audit log** entry on case creation (“CASE_CREATED”)
+- (Planned) Auth (email magic link + ORCID), vocab lookups (OncoTree/HGNC/ICD), tags, follow, search
 
-Open **http://localhost:3000/quick-case** to submit, **/feed** to view.
+---
 
-## Files
-- `prisma/schema.prisma` → SQLite DB at `prisma/dev.db`
-- `app/quick-case/page.tsx` → minimal form
-- `app/api/cases/route.ts` → create/list API with basic PHI guard
-- `app/feed/page.tsx` → recent cases
-- `prisma/seed.cjs` → 3 synthetic cases
+## URLs
+- **Production:** `https://<your-app>.vercel.app`
+- **Quick Case:** `/quick-case`
+- **Feed:** `/feed`
 
-## Switch to Postgres later
-Change the datasource to Postgres and set `DATABASE_URL`, then migrate:
-```prisma
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
-```
-```bash
-npx prisma migrate dev
-```
+---
+
+## Environment variables
+
+Create a file **`.env`** in the project root (do not commit it):
+

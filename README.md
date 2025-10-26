@@ -13,7 +13,7 @@
 ---
 
 ## URLs
-- **Production:** `https://<your-app>.vercel.app`
+- **Production:** `https://ppegc-demo.vercel.app`
 - **Quick Case:** `/quick-case`
 - **Feed:** `/feed`
 

@@ -1,9 +1,11 @@
+// app/layout.tsx
 import './globals.css';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'PEGCC Prisma Mockup',
-  description: 'Quick Case + Feed powered by Prisma (SQLite).',
+export const metadata: Metadata = {
+  title: 'PEGCC',
+  description: 'Platform for Exceptional Genomic Cancer Cases',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
